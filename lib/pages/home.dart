@@ -1,5 +1,6 @@
 // Flutter Imports
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Dart Imports
 import 'dart:io';
@@ -18,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   File? selectedFile;
+  String currentlyHoveringColor = "";
   Map<String, Map<String, dynamic>> colors = {};
 
   Widget buildOpenFileButton() {
@@ -46,10 +48,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildEditor() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Divider(endIndent: 0,indent: 0,thickness: 1,height: 1,),
         buildFilebar(),
-        buildFileContent()
+        Divider(endIndent: 0,indent: 0,thickness: 1,height: 1,),
+        Expanded(child: buildFileContent())
       ],
     );
   }
@@ -57,7 +60,6 @@ class _HomePageState extends State<HomePage> {
   Widget buildFilebar() {
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xffC9C8C7),
       ),
       child: Padding(
         padding: const EdgeInsets.all(15),
@@ -79,28 +81,44 @@ class _HomePageState extends State<HomePage> {
   Widget buildFileContent() {
     List<Widget> widgets = [];
     colors.forEach((key, value) {
+      List<Widget> colorTileContent = [
+        Spacer(),
+        Text(
+          key.toUpperCase().replaceAll("#", ""),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: isDarkColor(value['hex']) ? Color(0xffF2F0EF) : Colors.black
+          ),
+        )
+      ];
       widgets.add(
         Flexible(
           fit: FlexFit.tight,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Color(hexcodeToDecimal(value['hex'], opacity: 1)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Text(
-                    key.toUpperCase().replaceAll("#", ""),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: isDarkColor(value['hex']) ? Color(0xffF2F0EF) : Colors.black
-                    ),
+          child: InkWell(
+            onDoubleTap: () => setState(() {
+              Clipboard.setData(ClipboardData(text: key.toUpperCase()));
+            }),
+            onHover: (isHovered) => setState(() {
+              currentlyHoveringColor = isHovered? key:"";
+            }),
+            child: AnimatedScale(
+              alignment: Alignment.bottomCenter,
+              duration: Duration(milliseconds: 200),
+              scale: currentlyHoveringColor == key ? 1.1 : 1,
+              child: Container(
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Color(hexcodeToDecimal(value['hex'], opacity: 1)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 80),
+                  child: Column(
+                    children: colorTileContent,
                   )
-                ],
-              )
-            )
+                )
+              ),
+            ),
           ),
         )
       );
