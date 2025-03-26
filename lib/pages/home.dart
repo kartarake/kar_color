@@ -20,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   File? selectedFile;
   String currentlyHoveringColor = "";
+  String copiedColor = "";
   Map<String, Map<String, dynamic>> colors = {};
 
   Widget buildOpenFileButton() {
@@ -92,12 +93,74 @@ class _HomePageState extends State<HomePage> {
           ),
         )
       ];
+
+      var stack = Stack(
+        fit: StackFit.loose,
+        children: [
+          Positioned.fill(
+            child: Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Color(hexcodeToDecimal(value['hex'], opacity: 1)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 80),
+                child: Column(
+                  children: colorTileContent,
+                )
+              )
+            ),
+          ),
+
+          AnimatedOpacity(
+            opacity: copiedColor == key ? 1 : 0,
+            duration: Duration(milliseconds: 200),
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.black,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.copy, 
+                    size: 18,
+                    color: Color(0xffF2F0EF),
+                  ),
+
+                  SizedBox(width: 5,),
+
+                  Text(
+                    "Copied",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xffF2F0EF)
+                    ),
+                  ),
+                ],
+              ),
+            )
+          )
+        ],
+      );
+
+      void setCopiedToEmpty() {
+        Future.delayed(Duration(milliseconds: 500), () {
+          setState(() {
+            copiedColor = "";
+          });
+        });
+      }
+
       widgets.add(
         Flexible(
           fit: FlexFit.tight,
           child: InkWell(
-            onDoubleTap: () => setState(() {
+            onTap: () => setState(() {
               Clipboard.setData(ClipboardData(text: key.toUpperCase()));
+              copiedColor = key;
+              Future.delayed(Duration(seconds: 2), setCopiedToEmpty);
             }),
             onHover: (isHovered) => setState(() {
               currentlyHoveringColor = isHovered? key:"";
@@ -106,18 +169,7 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.bottomCenter,
               duration: Duration(milliseconds: 200),
               scale: currentlyHoveringColor == key ? 1.1 : 1,
-              child: Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: Color(hexcodeToDecimal(value['hex'], opacity: 1)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 80),
-                  child: Column(
-                    children: colorTileContent,
-                  )
-                )
-              ),
+              child: stack,
             ),
           ),
         )

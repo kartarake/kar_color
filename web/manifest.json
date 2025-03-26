@@ -1,6 +1,6 @@
 {
-    "name": "kar_color",
-    "short_name": "kar_color",
+    "name": "karCOLOR",
+    "short_name": "karCOLOR",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
